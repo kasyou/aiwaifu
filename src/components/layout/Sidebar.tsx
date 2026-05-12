@@ -20,6 +20,7 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
     pinCharacter,
     unpinCharacter,
     importMessages,
+    clearChat,
     resetPresets,
     toggleSidebar,
   } = useStore()
@@ -28,6 +29,7 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
   const [showAIGen, setShowAIGen] = useState(false)
   const [editingCharId, setEditingCharId] = useState<string | null>(null)
   const [menuCharId, setMenuCharId] = useState<string | null>(null)
+  const [clearConfirmCharId, setClearConfirmCharId] = useState<string | null>(null)
 
   // Import dialog state
   const [importDialog, setImportDialog] = useState<{
@@ -317,6 +319,17 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
+                          setClearConfirmCharId(char.id)
+                          setMenuCharId(null)
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-surface-card text-red-500"
+                      >
+                        清空对话
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
                           handleDelete(char.id)
                         }}
                         className="w-full px-4 py-2 text-left text-sm hover:bg-surface-card text-red-500"
@@ -400,6 +413,40 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
 
       {/* AI Generator Modal */}
       <AICharacterGenerator open={showAIGen} onClose={() => setShowAIGen(false)} />
+
+      {/* Clear chat confirmation */}
+      {clearConfirmCharId && (() => {
+        const c = characters.find((ch) => ch.id === clearConfirmCharId)
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="bg-canvas rounded-xl shadow-2xl p-6 max-w-sm w-full">
+              <h3 className="text-lg font-semibold text-ink mb-2">清空对话</h3>
+              <p className="text-sm text-body mb-5">
+                确定要清空与 <strong>{c?.name ?? '未知'}</strong> 的所有对话记录吗？此操作不可撤销。
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setClearConfirmCharId(null)}
+                  className="rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-medium text-body hover:bg-surface-card transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearChat(clearConfirmCharId)
+                    setClearConfirmCharId(null)
+                  }}
+                  className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
+                >
+                  清空
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Import overwrite/append dialog */}
       {importDialog && (

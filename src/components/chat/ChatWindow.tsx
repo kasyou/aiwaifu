@@ -19,14 +19,12 @@ export default function ChatWindow() {
     settings,
     addMessage,
     updateMessageContent,
-    clearChat,
     toggleSidebar,
   } = useStore()
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [isStreaming, setIsStreaming] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
-  const [showClearConfirm, setShowClearConfirm] = useState(false)
 
   const activeChar = characters.find((c) => c.id === activeCharacterId)
   const messages = activeCharacterId ? chats[activeCharacterId] || [] : []
@@ -147,17 +145,6 @@ export default function ChatWindow() {
           </svg>
         </button>
 
-        {/* Clear chat button */}
-        <button
-          type="button"
-          onClick={() => setShowClearConfirm(true)}
-          className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-red-50 hover:text-red-500 transition-colors"
-          title="清空对话"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-          </svg>
-        </button>
       </div>
 
       {/* Messages */}
@@ -192,36 +179,6 @@ export default function ChatWindow() {
         onClose={() => setShowEditor(false)}
       />
 
-      {/* Clear chat confirmation */}
-      {showClearConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-canvas rounded-xl shadow-2xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-semibold text-ink mb-2">清空对话</h3>
-            <p className="text-sm text-body mb-5">
-              确定要清空与 {activeChar.name} 的所有对话记录吗？此操作不可撤销。
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowClearConfirm(false)}
-                className="rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-medium text-body hover:bg-surface-card transition-colors"
-              >
-                取消
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (activeCharacterId) clearChat(activeCharacterId)
-                  setShowClearConfirm(false)
-                }}
-                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-              >
-                清空
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
