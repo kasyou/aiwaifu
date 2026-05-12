@@ -4,6 +4,8 @@
 
 **无需后端，所有数据存储在浏览器 localStorage 中，可一键部署到 Netlify。**
 
+> 🚀 **在线演示**：[kasyouaiwaifu.netlify.app](https://kasyouaiwaifu.netlify.app/)
+
 ## 功能
 
 ### 角色管理
