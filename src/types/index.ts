@@ -67,3 +67,14 @@ export interface OpenAIContentPart {
   text?: string
   image_url?: { url: string; detail?: 'low' | 'high' | 'auto' }
 }
+
+export interface ChatExport {
+  version: 1
+  exportedAt: string
+  character: {
+    id: string
+    name: string
+    systemPrompt: string
+  }
+  messages: Message[]
+}

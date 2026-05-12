@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useStore } from '../../store/useStore'
 import Avatar from '../ui/Avatar'
 import CharacterEditor from '../character/CharacterEditor'
 import AICharacterGenerator from '../character/AICharacterGenerator'
+import type { ChatExport, Message } from '../../types'
 
 interface SidebarProps {
   onOpenSettings: () => void
@@ -12,11 +13,13 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
   const {
     characters,
     activeCharacterId,
+    chats,
     pinnedOrder,
     setActiveCharacter,
     deleteCharacter,
     pinCharacter,
     unpinCharacter,
+    importMessages,
     resetPresets,
     toggleSidebar,
   } = useStore()
@@ -25,6 +28,16 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
   const [showAIGen, setShowAIGen] = useState(false)
   const [editingCharId, setEditingCharId] = useState<string | null>(null)
   const [menuCharId, setMenuCharId] = useState<string | null>(null)
+
+  // Import dialog state
+  const [importDialog, setImportDialog] = useState<{
+    charId: string
+    charName: string
+    messages: Message[]
+  } | null>(null)
+
+  const importFileRef = useRef<HTMLInputElement>(null)
+  const importTargetRef = useRef<string | null>(null)
 
   const sortedCharacters = useMemo(() => {
     const pinned = pinnedOrder
@@ -49,6 +62,111 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
     if (window.innerWidth < 768) {
       toggleSidebar()
     }
+  }
+
+  // ── Export ─────────────────────────────────────────────
+  const handleExport = (charId: string) => {
+    setMenuCharId(null)
+    const char = characters.find((c) => c.id === charId)
+    if (!char) return
+    const messages = chats[charId] || []
+
+    const data: ChatExport = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      character: {
+        id: char.id,
+        name: char.name,
+        systemPrompt: char.systemPrompt,
+      },
+      messages,
+    }
+
+    const now = new Date()
+    const ts =
+      String(now.getFullYear()) +
+      String(now.getMonth() + 1).padStart(2, '0') +
+      String(now.getDate()).padStart(2, '0') +
+      '_' +
+      String(now.getHours()).padStart(2, '0') +
+      String(now.getMinutes()).padStart(2, '0') +
+      String(now.getSeconds()).padStart(2, '0')
+
+    const filename = `${char.name}_聊天记录_${ts}.json`
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  // ── Import ─────────────────────────────────────────────
+  const handleImportClick = (charId: string) => {
+    setMenuCharId(null)
+    importTargetRef.current = charId
+    importFileRef.current?.click()
+  }
+
+  const handleImportFile = (file: File) => {
+    const charId = importTargetRef.current
+    if (!charId) return
+    const char = characters.find((c) => c.id === charId)
+    if (!char) return
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const raw = JSON.parse(reader.result as string)
+
+        // Validate structure
+        if (!raw.messages || !Array.isArray(raw.messages)) {
+          alert('文件格式无效：缺少 messages 字段或格式不正确。')
+          return
+        }
+
+        const messages: Message[] = raw.messages.filter(
+          (m: unknown) =>
+            m &&
+            typeof m === 'object' &&
+            typeof (m as Message).id === 'string' &&
+            typeof (m as Message).content === 'string' &&
+            ((m as Message).role === 'user' || (m as Message).role === 'assistant')
+        )
+
+        if (messages.length === 0) {
+          alert('文件格式无效：未找到有效的聊天消息。')
+          return
+        }
+
+        // Ensure every message has a timestamp
+        for (const m of messages) {
+          if (!m.timestamp) m.timestamp = Date.now()
+        }
+
+        setImportDialog({ charId, charName: char.name, messages })
+      } catch {
+        alert('无法解析该文件，请确认它是一个有效的 JSON 文件。')
+      }
+    }
+    reader.onerror = () => {
+      alert('文件读取失败，请重试。')
+    }
+    reader.readAsText(file)
+
+    // Reset file input
+    if (importFileRef.current) importFileRef.current.value = ''
+  }
+
+  const handleImportConfirm = (mode: 'overwrite' | 'append') => {
+    if (!importDialog) return
+    importMessages(importDialog.charId, importDialog.messages, mode)
+    // Switch to that character to show the result
+    setActiveCharacter(importDialog.charId)
+    setImportDialog(null)
   }
 
   return (
@@ -125,7 +243,7 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
                         setMenuCharId(null)
                       }}
                     />
-                    <div className="absolute right-0 top-full mt-1 z-20 w-36 rounded-lg border border-hairline bg-canvas shadow-lg py-1">
+                    <div className="absolute right-0 top-full mt-1 z-20 w-44 rounded-lg border border-hairline bg-canvas shadow-lg py-1">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -161,6 +279,40 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
                           置顶
                         </button>
                       )}
+                      {/* Separator */}
+                      <div className="my-1 border-t border-hairline" />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleExport(char.id)
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-surface-card text-body flex items-center gap-2"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                          <polyline points="7 10 12 15 17 10" />
+                          <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        导出聊天记录
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleImportClick(char.id)
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-surface-card text-body flex items-center gap-2"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                        导入聊天记录
+                      </button>
+                      {/* Separator */}
+                      <div className="my-1 border-t border-hairline" />
                       <button
                         type="button"
                         onClick={(e) => {
@@ -178,6 +330,18 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
             )
           })}
         </div>
+
+        {/* Hidden file input for import */}
+        <input
+          ref={importFileRef}
+          type="file"
+          accept=".json"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) handleImportFile(file)
+          }}
+          className="hidden"
+        />
 
         {/* Bottom actions */}
         <div className="border-t border-hairline p-3 space-y-2">
@@ -202,7 +366,6 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
             AI 生成
           </button>
 
-          {/* Settings button — moved here from floating corner */}
           <button
             type="button"
             onClick={onOpenSettings}
@@ -237,6 +400,42 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
 
       {/* AI Generator Modal */}
       <AICharacterGenerator open={showAIGen} onClose={() => setShowAIGen(false)} />
+
+      {/* Import overwrite/append dialog */}
+      {importDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-canvas rounded-xl shadow-2xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-ink mb-2">导入聊天记录</h3>
+            <p className="text-sm text-body mb-5">
+              将为 <strong>{importDialog.charName}</strong> 导入{' '}
+              <strong>{importDialog.messages.length}</strong> 条消息。请选择导入方式：
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setImportDialog(null)}
+                className="rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-medium text-body hover:bg-surface-card transition-colors"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={() => handleImportConfirm('append')}
+                className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
+              >
+                追加
+              </button>
+              <button
+                type="button"
+                onClick={() => handleImportConfirm('overwrite')}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-active transition-colors"
+              >
+                覆盖
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

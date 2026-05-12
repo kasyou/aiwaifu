@@ -27,6 +27,7 @@ interface AppState {
   addMessage: (characterId: string, message: Message) => void
   updateMessageContent: (characterId: string, messageId: string, content: string) => void
   clearChat: (characterId: string) => void
+  importMessages: (characterId: string, messages: Message[], mode: 'overwrite' | 'append') => void
 
   // Settings actions
   updateSettings: (updates: Partial<ApiSettings>) => void
@@ -138,6 +139,21 @@ export const useStore = create<AppState>()(
         set((s) => ({
           chats: { ...s.chats, [characterId]: [] },
         }))
+      },
+
+      importMessages: (characterId, messages, mode) => {
+        set((s) => {
+          const existing = s.chats[characterId] || []
+          if (mode === 'overwrite') {
+            return { chats: { ...s.chats, [characterId]: messages } }
+          }
+          // Append mode: simple concat
+          const existingIds = new Set(existing.map((m) => m.id))
+          const newOnes = messages.filter((m) => !existingIds.has(m.id))
+          return {
+            chats: { ...s.chats, [characterId]: [...existing, ...newOnes] },
+          }
+        })
       },
 
       updateSettings: (updates) => {
