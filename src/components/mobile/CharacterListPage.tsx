@@ -5,11 +5,12 @@ import CharacterEditor from '../character/CharacterEditor'
 import AICharacterGenerator from '../character/AICharacterGenerator'
 import type { ChatExport, Message } from '../../types'
 
-interface SidebarProps {
+interface CharacterListPageProps {
+  onSelectCharacter: (id: string) => void
   onOpenSettings: () => void
 }
 
-export default function Sidebar({ onOpenSettings }: SidebarProps) {
+export default function CharacterListPage({ onSelectCharacter, onOpenSettings }: CharacterListPageProps) {
   const {
     characters,
     activeCharacterId,
@@ -30,7 +31,6 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
   const [menuCharId, setMenuCharId] = useState<string | null>(null)
   const [clearConfirmCharId, setClearConfirmCharId] = useState<string | null>(null)
 
-  // Import dialog state
   const [importDialog, setImportDialog] = useState<{
     charId: string
     charName: string
@@ -60,6 +60,7 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
 
   const handleSelectCharacter = (id: string) => {
     setActiveCharacter(id)
+    onSelectCharacter(id)
   }
 
   // ── Export ─────────────────────────────────────────────
@@ -120,7 +121,6 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
       try {
         const raw = JSON.parse(reader.result as string)
 
-        // Validate structure
         if (!raw.messages || !Array.isArray(raw.messages)) {
           alert('文件格式无效：缺少 messages 字段或格式不正确。')
           return
@@ -140,7 +140,6 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
           return
         }
 
-        // Ensure every message has a timestamp
         for (const m of messages) {
           if (!m.timestamp) m.timestamp = Date.now()
         }
@@ -155,21 +154,18 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
     }
     reader.readAsText(file)
 
-    // Reset file input
     if (importFileRef.current) importFileRef.current.value = ''
   }
 
   const handleImportConfirm = (mode: 'overwrite' | 'append') => {
     if (!importDialog) return
     importMessages(importDialog.charId, importDialog.messages, mode)
-    // Switch to that character to show the result
-    setActiveCharacter(importDialog.charId)
     setImportDialog(null)
   }
 
   return (
     <>
-      <div className="flex h-full w-full md:w-72 flex-shrink-0 flex-col border-r border-hairline bg-canvas">
+      <div className="flex h-full w-full flex-col bg-canvas">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-hairline">
           <h1 className="text-base font-semibold text-ink">✨ AiWaifu</h1>
@@ -191,7 +187,6 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
                 }`}
                 onClick={() => handleSelectCharacter(char.id)}
               >
-                {/* Pin indicator bar */}
                 {isPinned && (
                   <div className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-primary" />
                 )}
@@ -205,14 +200,15 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
                     {char.isPreset ? '预设角色' : '自定义角色'}
                   </div>
                 </div>
-                {/* Three-dots menu */}
+
+                {/* Three-dots menu — always visible on mobile */}
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation()
                     setMenuCharId(menuCharId === char.id ? null : char.id)
                   }}
-                  className="opacity-0 group-hover:opacity-100 hidden md:flex h-7 w-7 items-center justify-center rounded-full text-muted hover:bg-hairline hover:text-ink transition-all"
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted hover:bg-hairline hover:text-ink transition-all"
                   title="更多操作"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -258,7 +254,6 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
                           置顶
                         </button>
                       )}
-                      {/* Separator */}
                       <div className="my-1 border-t border-hairline" />
                       <button
                         type="button"
@@ -290,7 +285,6 @@ export default function Sidebar({ onOpenSettings }: SidebarProps) {
                         </svg>
                         导入聊天记录
                       </button>
-                      {/* Separator */}
                       <div className="my-1 border-t border-hairline" />
                       <button
                         type="button"

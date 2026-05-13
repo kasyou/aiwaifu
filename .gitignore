@@ -5,3 +5,5 @@ dist
 *.tsbuildinfo
 awesome-design-md
 .claude
+*.keystore
+*.jks

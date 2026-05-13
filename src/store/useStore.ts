@@ -35,6 +35,8 @@ interface AppState {
   // UI
   toggleSidebar: () => void
   setSidebarOpen: (open: boolean) => void
+  mobileView: 'list' | 'chat'
+  setMobileView: (view: 'list' | 'chat') => void
 }
 
 function ensurePresetChars(chars: Character[]): Character[] {
@@ -162,6 +164,8 @@ export const useStore = create<AppState>()(
 
       toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
+      mobileView: 'list',
+      setMobileView: (view) => set({ mobileView: view }),
     }),
     {
       name: 'aiwaifu-storage',
