@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # ============================================================
 #  AiWaifu APK Build Script (macOS / Linux)
-#  Usage: chmod +x build-apk.sh && ./build-apk.sh
+#  Usage: bash scripts/build-apk.sh
 # ============================================================
 set -euo pipefail
+cd "$(dirname "$0")/.."
 
 echo "[1/3] Building web project..."
 npm run build

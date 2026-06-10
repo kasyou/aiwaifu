@@ -5,6 +5,8 @@
   If blocked: powershell -ExecutionPolicy Bypass -File build-apk.ps1
 #>
 $ErrorActionPreference = "Stop"
+$ProjectRoot = Split-Path -Parent $PSScriptRoot
+Set-Location $ProjectRoot
 
 Write-Host "[1/3] Building web project..." -ForegroundColor Cyan
 npm run build

@@ -1,9 +1,10 @@
 @echo off
 REM ============================================================
 REM  AiWaifu APK Build Script (Windows)
-REM  Usage: .\build-apk.bat
+REM  Usage: .\scripts\build-apk.bat
 REM ============================================================
 setlocal enabledelayedexpansion
+cd /d "%~dp0.."
 
 echo [1/3] Building web project...
 call npm run build

@@ -116,13 +116,13 @@ npx cap sync android
 
 # 4. 构建 APK
 # Windows PowerShell:
-.\build-apk.ps1
+.\scripts\build-apk.ps1
 
 # Windows CMD:
-.\build-apk.bat
+.\scripts\build-apk.bat
 
 # Linux/macOS:
-bash build-apk.sh
+bash scripts/build-apk.sh
 ```
 
 构建产物位于 `android/app/build/outputs/apk/debug/app-debug.apk`。
@@ -140,16 +140,16 @@ bash build-apk.sh
 
 ```bash
 # 检查 Java、Android SDK、Node.js 环境是否正确配置
-.\check-env.ps1    # Windows PowerShell
-.\check-env.bat    # Windows CMD
-bash check-env.sh  # Linux/macOS
+.\scripts\check-env.ps1    # Windows PowerShell
+.\scripts\check-env.bat    # Windows CMD
+bash scripts/check-env.sh  # Linux/macOS
 ```
 
 ### 开发调试
 
 ```bash
 # 在 Android Studio 中打开项目
-.\open-android.ps1
+.\scripts\open-android.ps1
 ```
 
 ---
@@ -196,11 +196,12 @@ AiWaifu/
 │   ├── variables.gradle                 # SDK 版本 + 依赖版本
 │   ├── build.gradle                     # Gradle 构建配置（含阿里云镜像）
 │   └── settings.gradle                  # Gradle 设置
-├── capacitor.config.ts                  # Capacitor 配置
-├── build-apk.ps1 / .bat / .sh           # APK 构建脚本
-├── check-env.ps1 / .bat / .sh           # 环境检查脚本
-├── open-android.ps1 / .bat / .sh        # Android Studio 启动脚本
-├── netlify.toml                         # Netlify 部署配置
+├── scripts/                              # 构建与工具脚本
+│   ├── build-apk.ps1 / .bat / .sh        # APK 构建
+│   ├── check-env.ps1 / .bat / .sh        # 环境检查
+│   └── open-android.ps1 / .bat / .sh     # Android Studio 启动
+├── capacitor.config.ts                   # Capacitor 配置
+├── netlify.toml                          # Netlify 部署配置
 └── package.json
 ```
 

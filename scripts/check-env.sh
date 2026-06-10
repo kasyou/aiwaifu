@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================
 #  AiWaifu Environment Check (macOS / Linux)
-#  Usage: chmod +x check-env.sh && ./check-env.sh
+#  Usage: bash scripts/check-env.sh
 # ============================================================
 echo "============================================================"
 echo "  AiWaifu Android Environment Check"
@@ -62,6 +62,6 @@ echo ""
 echo "============================================================"
 echo "  Next steps:"
 echo "    1. Fix any [MISSING] items above"
-echo "    2. Run: chmod +x build-apk.sh && ./build-apk.sh"
-echo "    3. Or open Android Studio: chmod +x open-android.sh && ./open-android.sh"
+echo "    2. Run: bash scripts/build-apk.sh"
+echo "    3. Or open Android Studio: bash scripts/open-android.sh"
 echo "============================================================"

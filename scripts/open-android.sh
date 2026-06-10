@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================
 #  Open project in Android Studio for manual adjustments
-#  Usage: chmod +x open-android.sh && ./open-android.sh
+#  Usage: bash scripts/open-android.sh
 # ============================================================
+cd "$(dirname "$0")/.."
 npx cap open android

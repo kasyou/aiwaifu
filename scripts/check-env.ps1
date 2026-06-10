@@ -1,8 +1,11 @@
 <#
 .SYNOPSIS
   AiWaifu Environment Check (PowerShell)
-  Usage: .\check-env.ps1
+  Usage: .\scripts\check-env.ps1
 #>
+$ProjectRoot = Split-Path -Parent $PSScriptRoot
+Set-Location $ProjectRoot
+
 Write-Host "============================================================" -ForegroundColor Yellow
 Write-Host "  AiWaifu Android Environment Check (PowerShell)" -ForegroundColor Yellow
 Write-Host "============================================================" -ForegroundColor Yellow
@@ -54,6 +57,6 @@ if ($env:ANDROID_HOME) {
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Yellow
-Write-Host "  Next: .\build-apk.ps1" -ForegroundColor White
-Write-Host "  (if blocked: powershell -ExecutionPolicy Bypass -File build-apk.ps1)" -ForegroundColor Gray
+Write-Host "  Next: .\scripts\build-apk.ps1" -ForegroundColor White
+Write-Host "  (if blocked: powershell -ExecutionPolicy Bypass -File scripts\build-apk.ps1)" -ForegroundColor Gray
 Write-Host "============================================================" -ForegroundColor Yellow

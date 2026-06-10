@@ -1,7 +1,7 @@
 @echo off
 REM ============================================================
 REM  AiWaifu Environment Check (Windows)
-REM  Usage: .\check-env.bat
+REM  Usage: .\scripts\check-env.bat
 REM ============================================================
 echo ============================================================
 echo   AiWaifu Android Environment Check
@@ -64,6 +64,6 @@ echo.
 echo ============================================================
 echo   Next steps:
 echo     1. Fix any [MISSING] items above
-echo     2. Run: .\build-apk.bat
-echo     3. Or open Android Studio: .\open-android.bat
+echo     2. Run: .\scripts\build-apk.bat
+echo     3. Or open Android Studio: .\scripts\open-android.bat
 echo ============================================================
